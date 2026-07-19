@@ -1,0 +1,17 @@
+# Project-level gitignore
+.gradle
+/local.properties
+/.idea/
+/build
+
+# Sensitive files
+google-services.json
+*.jks
+*.keystore
+
+# OS specific
+.DS_Store
+*.iml
+/captures
+.externalNativeBuild
+.cxx
