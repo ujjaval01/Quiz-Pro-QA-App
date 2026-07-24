@@ -1,7 +1,9 @@
 package com.uv.questionsanswers
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -13,11 +15,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import org.json.JSONArray
 import org.json.JSONObject
+import com.uv.questionsanswers.ui.theme.NeuBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,9 +37,10 @@ fun AdminPanel(onLogout: () -> Unit) {
     var editingTestSeries by remember { mutableStateOf<TestSeries?>(null) }
     var editingMetadata by remember { mutableStateOf<TestSeries?>(null) }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
+    PremiumScreen {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
                 CenterAlignedTopAppBar(
                     title = { Text("Admin Portal", fontWeight = FontWeight.ExtraBold) },
                     actions = {
@@ -74,28 +78,63 @@ fun AdminPanel(onLogout: () -> Unit) {
                         StatCard("Submissions", QuizRepository.submissions.size.toString(), Modifier.weight(1f))
                     }
 
-                    TabRow(
-                        selectedTabIndex = selectedTab,
-                        containerColor = Color.Transparent,
-                        divider = {},
-                        indicator = { tabPositions ->
-                            TabRowDefaults.SecondaryIndicator(
-                                Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                                color = MaterialTheme.colorScheme.primary,
-                                height = 3.dp
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .neumorphic(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(NeuBackground)
+                            .padding(4.dp)
+                    ) {
+                        val transition = updateTransition(targetState = selectedTab, label = "adminTab")
+
+                        // Neumorphic Indicator (Behind text)
+                        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                            val tabWidth = maxWidth / 2
+                            val offset by transition.animateDp(label = "offset") { if (it == 0) 0.dp else tabWidth }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = offset)
+                                    .width(tabWidth)
+                                    .fillMaxHeight()
+                                    .neumorphic(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(NeuBackground)
                             )
                         }
-                    ) {
-                        Tab(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
-                            text = { Text("Test Series", fontWeight = FontWeight.Bold) }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Submissions", fontWeight = FontWeight.Bold) }
-                        )
+
+                        // Tab Texts (Above indicator)
+                        Row(modifier = Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) { selectedTab = 0 },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "Test Series",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (selectedTab == 0) MaterialTheme.colorScheme.primary else Color.Gray
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) { selectedTab = 1 },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "Submissions",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (selectedTab == 1) MaterialTheme.colorScheme.primary else Color.Gray
+                                )
+                            }
+                        }
                     }
 
                     AnimatedContent(
@@ -120,6 +159,7 @@ fun AdminPanel(onLogout: () -> Unit) {
                 }
             }
         }
+    }
 
     if (showAddTestDialog) {
         CreateTestDialog(
@@ -159,7 +199,7 @@ fun TestSeriesList(onOpen: (TestSeries) -> Unit, onEditMetadata: (TestSeries) ->
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         itemsIndexed(QuizRepository.testSeriesList, key = { _, it -> it.id }) { index, series ->
             StaggeredFadeIn(index) {
@@ -215,7 +255,7 @@ fun TestEditor(testSeriesId: String, onBack: () -> Unit) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.padding(16.dp)) {
-            IconButton(onClick = onBack, modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)) {
+            IconButton(onClick = onBack, modifier = Modifier.neumorphic(elevation = 2.dp, shape = CircleShape).clip(CircleShape).background(NeuBackground)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
             }
         }
@@ -224,25 +264,19 @@ fun TestEditor(testSeriesId: String, onBack: () -> Unit) {
             Text(currentSeries.title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
             Text("${currentSeries.questions.size} Questions", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 PremiumButton(
                     text = if (currentSeries.isPublished) "REPUBLISH TEST" else "PUBLISH TEST",
                     onClick = { QuizRepository.publishTestSeries(currentSeries.id) },
                     modifier = Modifier.weight(1f),
-                    containerColor = if (currentSeries.isPublished) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
-                    contentColor = if (currentSeries.isPublished) MaterialTheme.colorScheme.onSurfaceVariant else Color.White
+                    containerColor = if (currentSeries.isPublished) NeuBackground else MaterialTheme.colorScheme.primary,
+                    contentColor = if (currentSeries.isPublished) MaterialTheme.colorScheme.primary else Color.White
                 )
                 
-                OutlinedButton(
-                    onClick = { showBulkImportDialog = true },
-                    modifier = Modifier.height(56.dp),
-                    shape = RoundedCornerShape(PremiumTheme.CornerMedium)
-                ) {
-                    Icon(Icons.Default.CloudUpload, null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("BULK ADD", fontWeight = FontWeight.Bold)
+                Box(modifier = Modifier.size(56.dp).neumorphic(elevation = 3.dp, shape = RoundedCornerShape(PremiumTheme.CornerMedium)).clip(RoundedCornerShape(PremiumTheme.CornerMedium)).background(NeuBackground).clickable { showBulkImportDialog = true }, contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.CloudUpload, null, tint = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -250,7 +284,7 @@ fun TestEditor(testSeriesId: String, onBack: () -> Unit) {
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             itemsIndexed(currentSeries.questions, key = { _, it -> it.id }) { index, question ->
                 StaggeredFadeIn(index) {
@@ -258,16 +292,17 @@ fun TestEditor(testSeriesId: String, onBack: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = "${index + 1}",
-                                modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                                modifier = Modifier.size(36.dp).neumorphic(elevation = 2.dp, shape = CircleShape).clip(CircleShape).background(NeuBackground),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 36.sp
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(question.text, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                             IconButton(onClick = { editingQuestion = question }) {
-                                Icon(Icons.Default.Edit, null, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Edit, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = {
                                 val updatedQuestions = currentSeries.questions.filter { it.id != question.id }
@@ -280,15 +315,12 @@ fun TestEditor(testSeriesId: String, onBack: () -> Unit) {
                 }
             }
             item {
-                OutlinedButton(
+                PremiumButton(
+                    text = "ADD QUESTION",
                     onClick = { showQuestionDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(PremiumTheme.CornerMedium)
-                ) {
-                    Icon(Icons.Default.Add, null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("ADD QUESTION", fontWeight = FontWeight.Bold)
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = Icons.Default.Add
+                )
             }
         }
     }
@@ -334,23 +366,29 @@ fun BulkImportDialog(onDismiss: () -> Unit, onImport: (List<Question>) -> Unit) 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("Bulk Import Questions", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 Text(
-                    "Paste your questions in JSON format. Ask me (AI) to format your list if needed.",
+                    "Paste your questions in JSON format.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                OutlinedTextField(
-                    value = jsonInput,
-                    onValueChange = { jsonInput = it; error = null },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp),
-                    placeholder = { Text("[{\"text\": \"...\", \"options\": [...], \"correctOptionIndex\": 0}]") },
-                    textStyle = MaterialTheme.typography.bodySmall,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                Box(modifier = Modifier.fillMaxWidth().neumorphic(elevation = 2.dp).clip(RoundedCornerShape(12.dp)).background(NeuBackground)) {
+                    OutlinedTextField(
+                        value = jsonInput,
+                        onValueChange = { jsonInput = it; error = null },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        placeholder = { Text("[{\"text\": \"...\", \"options\": [...], \"correctOptionIndex\": 0}]") },
+                        textStyle = MaterialTheme.typography.bodySmall,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent
+                        )
+                    )
+                }
 
                 if (error != null) {
                     Text(error!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
@@ -371,6 +409,7 @@ fun BulkImportDialog(onDismiss: () -> Unit, onImport: (List<Question>) -> Unit) 
                                     val optionsArray = obj.getJSONArray("options")
                                     val options = List(optionsArray.length()) { optionsArray.getString(it) }
                                     list.add(Question(
+                                        id = java.util.UUID.randomUUID().toString(), // Explicitly set ID
                                         text = obj.getString("text"),
                                         options = options,
                                         correctOptionIndex = obj.getInt("correctOptionIndex")
@@ -394,7 +433,7 @@ fun AllSubmissionsList() {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         itemsIndexed(QuizRepository.submissions.reversed()) { index, sub ->
             StaggeredFadeIn(index) {
@@ -420,14 +459,16 @@ fun AllSubmissionsList() {
                             )
                         }
                     }
-                    if (!sub.isResultPublished) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        PremiumButton(
-                            text = "PUBLISH SCORE",
-                            onClick = { QuizRepository.publishAllResultsForTest(sub.testSeriesId) },
-                            modifier = Modifier.fillMaxWidth().height(44.dp)
-                        )
-                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    PremiumButton(
+                        text = if (sub.isResultPublished) "RE-CALCULATE & UPDATE" else "PUBLISH SCORE",
+                        onClick = { QuizRepository.publishAllResultsForTest(sub.testSeriesId) },
+                        modifier = Modifier.fillMaxWidth(),
+                        containerColor = if (sub.isResultPublished) NeuBackground else MaterialTheme.colorScheme.primary,
+                        contentColor = if (sub.isResultPublished) MaterialTheme.colorScheme.primary else Color.White
+                    )
                 }
             }
         }
@@ -487,7 +528,7 @@ fun QuestionDialog(
                 Text(text = if (initialQuestion == null) "New Question" else "Edit Question", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 Spacer(modifier = Modifier.height(24.dp))
                 PremiumTextField(value = text, onValueChange = { text = it }, label = "Question Text")
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 
                 val opts = listOf(opt1 to { s:String -> opt1 = s }, opt2 to { s:String -> opt2 = s }, opt3 to { s:String -> opt3 = s }, opt4 to { s:String -> opt4 = s })
                 opts.forEachIndexed { index, pair ->
@@ -502,7 +543,7 @@ fun QuestionDialog(
                             ) 
                         }
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 
                 Spacer(modifier = Modifier.height(32.dp))
