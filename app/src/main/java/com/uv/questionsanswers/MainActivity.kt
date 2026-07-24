@@ -22,33 +22,28 @@ class MainActivity : ComponentActivity() {
                 var loggedInUser by remember { mutableStateOf<String?>(null) }
                 var isAdmin by remember { mutableStateOf(false) }
 
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    PremiumScreen {
-                        AnimatedContent(
-                            targetState = showSplash to loggedInUser,
-                            transitionSpec = {
-                                (fadeIn(tween(500)) + slideInHorizontally(tween(500)) { it })
-                                    .togetherWith(fadeOut(tween(500)) + slideOutHorizontally(tween(500)) { -it })
-                            },
-                            label = "screenTransition"
-                        ) { (splash, user) ->
-                            when {
-                                splash -> SplashScreen { showSplash = false }
-                                user == null -> LoginScreen(onLoginSuccess = { role, name ->
-                                    if (role == "Admin") {
-                                        isAdmin = true
-                                        loggedInUser = "Admin"
-                                    } else {
-                                        isAdmin = false
-                                        loggedInUser = name
-                                    }
-                                })
-                                isAdmin -> AdminPanel(onLogout = { loggedInUser = null })
-                                else -> UserPanel(username = user, onLogout = { loggedInUser = null })
-                            }
+                PremiumScreen {
+                    AnimatedContent(
+                        targetState = showSplash to loggedInUser,
+                        transitionSpec = {
+                            (fadeIn(tween(600)) + scaleIn(initialScale = 0.95f))
+                                .togetherWith(fadeOut(tween(400)) + scaleOut(targetScale = 1.05f))
+                        },
+                        label = "screenTransition"
+                    ) { (splash, user) ->
+                        when {
+                            splash -> SplashScreen { showSplash = false }
+                            user == null -> LoginScreen(onLoginSuccess = { role, name ->
+                                if (role == "Admin") {
+                                    isAdmin = true
+                                    loggedInUser = "Admin"
+                                } else {
+                                    isAdmin = false
+                                    loggedInUser = name
+                                }
+                            })
+                            isAdmin -> AdminPanel(onLogout = { loggedInUser = null })
+                            else -> UserPanel(username = user, onLogout = { loggedInUser = null })
                         }
                     }
                 }
