@@ -1,22 +1,21 @@
 package com.uv.questionsanswers.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = IndigoDeep,
+    primary = Color(0xFF4A90E2),
     onPrimary = Color.White,
-    secondary = SuccessGreen,
+    secondary = Color(0xFF50C878),
     onSecondary = Color.White,
     tertiary = IndigoLight,
-    background = SoftGray,
-    surface = WarmWhite,
+    background = NeuBackground,
+    surface = NeuBackground,
     onBackground = CharcoalDeep,
     onSurface = CharcoalDeep,
-    surfaceVariant = WarmWhite,
+    surfaceVariant = NeuDarkShadow.copy(alpha = 0.5f),
     onSurfaceVariant = CharcoalDeep.copy(alpha = 0.6f)
 )
 
@@ -24,7 +23,7 @@ private val LightColorScheme = lightColorScheme(
 fun QuestionsAnswersTheme(
     content: @Composable () -> Unit
 ) {
-    // Always use LightColorScheme
+    // Always use LightColorScheme with Neumorphic colors
     val colorScheme = LightColorScheme
 
     MaterialTheme(
