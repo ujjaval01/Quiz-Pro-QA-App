@@ -122,12 +122,33 @@ object QuizRepository {
     }
 
     fun publishAllResultsForTest(testSeriesId: String) {
+        val series = testSeriesList.find { it.id == testSeriesId } ?: return
+        
         db.collection("submissions")
             .whereEqualTo("testSeriesId", testSeriesId)
             .get()
             .addOnSuccessListener { snapshot ->
                 for (doc in snapshot.documents) {
-                    doc.reference.update("isResultPublished", true)
+                    val submission = doc.toObject(UserSubmission::class.java) ?: continue
+                    
+                    // Re-calculate score based on current questions (in case they were updated)
+                    var correct = 0
+                    series.questions.forEach { q ->
+                        val userSelection = (submission.selectedAnswers[q.id] as? Number)?.toInt()
+                        if (userSelection == q.correctOptionIndex) {
+                            correct++
+                        }
+                    }
+                    
+                    val updates = mapOf(
+                        "isResultPublished" to true,
+                        "correctAnswers" to correct,
+                        "score" to correct,
+                        "totalQuestions" to series.questions.size,
+                        "testTitle" to series.title
+                    )
+                    
+                    doc.reference.update(updates)
                 }
             }
     }
