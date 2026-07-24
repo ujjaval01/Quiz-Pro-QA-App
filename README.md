@@ -35,7 +35,7 @@ A modern, high-performance Android Quiz application built with **Jetpack Compose
 
 1. **Clone the project**
    ```bash
-   git clone https://github.com/ujjaval01/-Quiz-Pro---Q-A-App.git
+   git clone https://github.com/ujjaval01/Quiz-Pro-QA-App.git
    ```
 
 2. **Add Firebase**
