@@ -12,12 +12,16 @@ val WarmWhite = Color(0xFFFFFFFF)
 val CoralWarning = Color(0xFFF43F5E)
 val SuccessGreen = Color(0xFF059669)
 
-// Neumorphic Palette
+// Light Neumorphic Palette
 val NeuBackground = Color(0xFFEDF1F5)
 val NeuLightShadow = Color(0xFFFFFFFF)
 val NeuDarkShadow = Color(0xFFD1D9E6)
 
-// Dark Mode Colors (Optional, but kept for consistency)
+// Dark Mode Palette
 val DarkSurface = Color(0xFF1F2937)
 val DarkBackground = Color(0xFF111827)
 val DarkOnSurface = Color(0xFFF3F4F6)
+
+// Dark Neumorphic Shadows
+val NeuDarkShadowDark = Color(0xFF0A0F1D)
+val NeuLightShadowDark = Color(0xFF2D3748)

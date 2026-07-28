@@ -44,7 +44,7 @@ private val DarkColorScheme = darkColorScheme(
     surface = DarkSurface,
     onSurface = DarkOnSurface,
 
-    surfaceVariant = CharcoalDeep,
+    surfaceVariant = DarkSurface,
     onSurfaceVariant = DarkOnSurface.copy(alpha = 0.7f)
 )
 
@@ -56,21 +56,13 @@ fun QuestionsAnswersTheme(
 ) {
     val context = LocalContext.current
 
-    val colorScheme =
-        when {
-            dynamicColor &&
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                if (darkTheme) {
-                    dynamicDarkColorScheme(context)
-                } else {
-                    dynamicLightColorScheme(context)
-                }
-            }
-
-            darkTheme -> DarkColorScheme
-
-            else -> LightColorScheme
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,
