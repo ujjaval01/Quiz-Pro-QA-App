@@ -1,33 +1,26 @@
 package com.uv.questionsanswers
 
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Quiz
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,9 +28,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uv.questionsanswers.ui.theme.NeuBackground
 import com.uv.questionsanswers.ui.theme.NeuDarkShadow
+import com.uv.questionsanswers.ui.theme.NeuDarkShadowDark
 import com.uv.questionsanswers.ui.theme.NeuLightShadow
+import com.uv.questionsanswers.ui.theme.NeuLightShadowDark
 
 object PremiumTheme {
     val CornerLarge = 32.dp
@@ -45,51 +39,56 @@ object PremiumTheme {
     val ElevationSoft = 6.dp
 }
 
+@Composable
 fun Modifier.neumorphic(
     elevation: Dp = 6.dp,
     shape: RoundedCornerShape = RoundedCornerShape(PremiumTheme.CornerMedium),
-    isPressed: Boolean = false
-): Modifier = this.drawBehind {
-    val shadowColor = NeuDarkShadow
-    val lightColor = NeuLightShadow
-    
-    drawIntoCanvas { canvas ->
-        val paint = Paint()
-        val frameworkPaint = paint.asFrameworkPaint()
-        
-        if (isPressed) {
-            // Inner shadows for pressed state
-            frameworkPaint.color = shadowColor.toArgb()
-            frameworkPaint.maskFilter = android.graphics.BlurMaskFilter(elevation.toPx(), android.graphics.BlurMaskFilter.Blur.NORMAL)
-            
-            // This is a simplification; true inner shadows are harder in Compose without native support
-            // For now, we'll just darken the background slightly
-        } else {
-            // Outer shadows
-            // Dark Shadow (Bottom Right)
-            frameworkPaint.color = shadowColor.toArgb()
-            frameworkPaint.maskFilter = android.graphics.BlurMaskFilter(elevation.toPx(), android.graphics.BlurMaskFilter.Blur.NORMAL)
-            canvas.drawRoundRect(
-                left = elevation.toPx(),
-                top = elevation.toPx(),
-                right = size.width + elevation.toPx(),
-                bottom = size.height + elevation.toPx(),
-                radiusX = shape.topStart.toPx(size, this),
-                radiusY = shape.topStart.toPx(size, this),
-                paint = paint
-            )
-            
-            // Light Shadow (Top Left)
-            frameworkPaint.color = lightColor.toArgb()
-            canvas.drawRoundRect(
-                left = -elevation.toPx(),
-                top = -elevation.toPx(),
-                right = size.width - elevation.toPx(),
-                bottom = size.height - elevation.toPx(),
-                radiusX = shape.topStart.toPx(size, this),
-                radiusY = shape.topStart.toPx(size, this),
-                paint = paint
-            )
+    isPressed: Boolean = false,
+    isDark: Boolean = isSystemInDarkTheme()
+): Modifier {
+    val shadowColor = if (isDark) NeuDarkShadowDark else NeuDarkShadow
+    val lightColor = if (isDark) NeuLightShadowDark else NeuLightShadow
+
+    return this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint()
+            val frameworkPaint = paint.asFrameworkPaint()
+
+            if (isPressed) {
+                frameworkPaint.color = shadowColor.toArgb()
+                frameworkPaint.maskFilter = android.graphics.BlurMaskFilter(
+                    elevation.toPx(),
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            } else {
+                // Dark Shadow (Bottom Right)
+                frameworkPaint.color = shadowColor.toArgb()
+                frameworkPaint.maskFilter = android.graphics.BlurMaskFilter(
+                    elevation.toPx(),
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+                canvas.drawRoundRect(
+                    left = elevation.toPx(),
+                    top = elevation.toPx(),
+                    right = size.width + elevation.toPx(),
+                    bottom = size.height + elevation.toPx(),
+                    radiusX = shape.topStart.toPx(size, this),
+                    radiusY = shape.topStart.toPx(size, this),
+                    paint = paint
+                )
+
+                // Light Shadow (Top Left)
+                frameworkPaint.color = lightColor.toArgb()
+                canvas.drawRoundRect(
+                    left = -elevation.toPx(),
+                    top = -elevation.toPx(),
+                    right = size.width - elevation.toPx(),
+                    bottom = size.height - elevation.toPx(),
+                    radiusX = shape.topStart.toPx(size, this),
+                    radiusY = shape.topStart.toPx(size, this),
+                    paint = paint
+                )
+            }
         }
     }
 }
@@ -99,7 +98,7 @@ fun PremiumButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = NeuBackground,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     icon: ImageVector? = null
@@ -142,19 +141,25 @@ fun PremiumButton(
 fun PremiumCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    containerColor: Color = NeuBackground,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     shape: RoundedCornerShape = RoundedCornerShape(PremiumTheme.CornerLarge),
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    
+
     Box(
         modifier = modifier
             .neumorphic(shape = shape, isPressed = isPressed && onClick != null)
             .clip(shape)
             .background(containerColor)
-            .then(if (onClick != null) Modifier.clickable(interactionSource = interactionSource, indication = null, onClick = onClick) else Modifier)
+            .then(
+                if (onClick != null) Modifier.clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                ) else Modifier
+            )
             .padding(24.dp)
     ) {
         Column {
@@ -195,7 +200,7 @@ fun PremiumTextField(
                 .fillMaxWidth()
                 .neumorphic(elevation = 3.dp)
                 .clip(RoundedCornerShape(PremiumTheme.CornerMedium))
-                .background(NeuBackground)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             OutlinedTextField(
                 value = value,
@@ -210,7 +215,9 @@ fun PremiumTextField(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true
             )
@@ -228,7 +235,7 @@ fun StaggeredFadeIn(
 
 @Composable
 fun BackgroundDecorations() {
-    Box(modifier = Modifier.fillMaxSize().background(NeuBackground)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val infiniteTransition = rememberInfiniteTransition(label = "stickers")
         val floatingOffset by infiniteTransition.animateFloat(
             initialValue = 0f,
@@ -240,7 +247,6 @@ fun BackgroundDecorations() {
             label = "floating"
         )
 
-        // Floating Stickers with Neumorphic touch (low alpha shadows)
         Box(modifier = Modifier.fillMaxSize()) {
             StickerIcon(
                 icon = Icons.Outlined.Quiz,
@@ -249,7 +255,7 @@ fun BackgroundDecorations() {
                     .padding(top = 100.dp, end = 40.dp)
                     .offset(y = floatingOffset.dp)
                     .rotate(15f),
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
             )
             StickerIcon(
                 icon = Icons.Outlined.School,
@@ -258,7 +264,7 @@ fun BackgroundDecorations() {
                     .padding(start = 20.dp, bottom = 150.dp)
                     .offset(y = (-floatingOffset).dp)
                     .rotate(-20f),
-                tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+                tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
             )
         }
     }
@@ -283,7 +289,7 @@ fun PremiumScreen(
     showBackground: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize().background(NeuBackground)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (showBackground) {
             BackgroundDecorations()
         }

@@ -16,13 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,7 +39,7 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
     var selectedTestSeries by remember { mutableStateOf<TestSeries?>(null) }
     var showInstructions by remember { mutableStateOf(false) }
     var reviewingSubmission by remember { mutableStateOf<UserSubmission?>(null) }
-    
+
     val userSubmissions = QuizRepository.submissions.filter { it.username == username }
 
     PremiumScreen {
@@ -47,22 +47,23 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
             containerColor = Color.Transparent,
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { 
+                    title = {
                         Text(
                             if (reviewingSubmission != null) "Review Result"
-                            else if (selectedTestSeries == null) "Dashboard" 
-                            else selectedTestSeries!!.title, 
-                            fontWeight = FontWeight.ExtraBold
-                        ) 
+                            else if (selectedTestSeries == null) "Dashboard"
+                            else selectedTestSeries!!.title,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     },
                     navigationIcon = {
                         if (reviewingSubmission != null) {
                             IconButton(onClick = { reviewingSubmission = null }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = MaterialTheme.colorScheme.onBackground)
                             }
                         } else if (selectedTestSeries != null) {
                             IconButton(onClick = { selectedTestSeries = null; showInstructions = false }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = MaterialTheme.colorScheme.onBackground)
                             }
                         }
                     },
@@ -87,11 +88,12 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
                     // Welcome Header
                     Box(modifier = Modifier.padding(24.dp)) {
                         Column {
-                            Text("Hello,", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+                            Text("Hello,", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(username, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
 
+                    // Neumorphic Tab Container
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 24.dp)
@@ -99,16 +101,16 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
                             .height(56.dp)
                             .neumorphic(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
                             .clip(RoundedCornerShape(20.dp))
-                            .background(NeuBackground)
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(4.dp)
                     ) {
                         val transition = updateTransition(targetState = selectedTab, label = "tab")
 
-                        // The Neumorphic Indicator (Behind the text)
+                        // The Neumorphic Indicator
                         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                             val tabWidth = maxWidth / 2
                             val offset by transition.animateDp(label = "offset") { if (it == 0) 0.dp else tabWidth }
-                            
+
                             Box(
                                 modifier = Modifier
                                     .offset(x = offset)
@@ -116,11 +118,11 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
                                     .fillMaxHeight()
                                     .neumorphic(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(NeuBackground)
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
                             )
                         }
 
-                        // The Tabs (Above the indicator)
+                        // The Tabs (Text Labels)
                         Row(modifier = Modifier.fillMaxSize()) {
                             Box(
                                 modifier = Modifier
@@ -132,7 +134,7 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
                                 Text(
                                     "Available",
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = if (selectedTab == 0) MaterialTheme.colorScheme.primary else Color.Gray
+                                    color = if (selectedTab == 0) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                             Box(
@@ -145,7 +147,7 @@ fun UserPanel(username: String, onLogout: () -> Unit) {
                                 Text(
                                     "My Results",
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = if (selectedTab == 1) MaterialTheme.colorScheme.primary else Color.Gray
+                                    color = if (selectedTab == 1) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -199,29 +201,29 @@ fun InstructionsScreen(testSeries: TestSeries, onStart: () -> Unit, onBack: () -
         ) {
             Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        Text("Test Instructions", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-        Text("Please read carefully before starting", color = Color.Gray)
-        
+        Text("Test Instructions", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
+        Text("Please read carefully before starting", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         PremiumCard(modifier = Modifier.fillMaxWidth()) {
             InstructionItem("Duration", "${testSeries.durationMinutes} Minutes", Icons.Default.Timer)
             InstructionItem("Questions", "${testSeries.questions.size} Questions", Icons.Default.QuestionMark)
             InstructionItem("Guidelines", "Do not switch tabs or exit.", Icons.Default.Lock)
             InstructionItem("Safety", "Test will auto-submit on timeout.", Icons.Default.CloudDone)
         }
-        
+
         Spacer(modifier = Modifier.height(40.dp))
-        
+
         PremiumButton(
             text = "START TEST",
             onClick = onStart,
             modifier = Modifier.fillMaxWidth()
         )
         TextButton(onClick = onBack, modifier = Modifier.padding(top = 8.dp)) {
-            Text("NOT NOW", color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text("NOT NOW", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -234,8 +236,8 @@ fun InstructionItem(label: String, value: String, icon: ImageVector) {
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(label, fontSize = 12.sp, color = Color.Gray)
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
@@ -252,9 +254,9 @@ fun AvailableTestsList(username: String, onSelect: (TestSeries) -> Unit) {
     if (tests.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.Celebration, null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
+                Icon(Icons.Default.Celebration, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("You're all caught up!", color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text("You're all caught up!", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
             }
         }
         return
@@ -270,8 +272,8 @@ fun AvailableTestsList(username: String, onSelect: (TestSeries) -> Unit) {
                 PremiumCard(onClick = { onSelect(series) }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(series.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
-                            Text("${series.questions.size} Questions • ${series.durationMinutes} Mins", color = Color.Gray, fontSize = 13.sp)
+                            Text(series.title, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text("${series.questions.size} Questions • ${series.durationMinutes} Mins", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                         }
                         Box(modifier = Modifier.size(44.dp).neumorphic(elevation = 3.dp, shape = CircleShape).clip(CircleShape).background(NeuBackground), contentAlignment = Alignment.Center) {
                             Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
@@ -313,15 +315,15 @@ fun QuizView(username: String, testSeries: TestSeries, onComplete: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(12.dp)) {
                 val minutes = timeLeftSeconds / 60
                 val seconds = timeLeftSeconds % 60
-                val color = if (timeLeftSeconds < 60) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                
-                Icon(Icons.Default.Timer, null, tint = color, modifier = Modifier.size(20.dp))
+                val timerColor = if (timeLeftSeconds < 60) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+
+                Icon(Icons.Default.Timer, null, tint = timerColor, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 22.sp,
-                    color = color
+                    color = timerColor
                 )
             }
         }
@@ -331,7 +333,7 @@ fun QuizView(username: String, testSeries: TestSeries, onComplete: () -> Unit) {
             contentPadding = PaddingValues(24.dp),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            itemsIndexed(testSeries.questions) { index, question ->
+            itemsIndexed(testSeries.questions, key = { _, q -> q.id }) { index, question ->
                 StaggeredFadeIn(index) {
                     Column {
                         Text(
@@ -342,7 +344,7 @@ fun QuizView(username: String, testSeries: TestSeries, onComplete: () -> Unit) {
                             modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
                         )
                         PremiumCard {
-                            Text(question.text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(question.text, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(modifier = Modifier.height(24.dp))
                             question.options.forEachIndexed { optIndex, option ->
                                 val isSelected = selectedAnswers[question.id] == optIndex
@@ -362,7 +364,7 @@ fun QuizView(username: String, testSeries: TestSeries, onComplete: () -> Unit) {
         Box(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
             PremiumButton(
                 text = "SUBMIT QUIZ",
-                onClick = { 
+                onClick = {
                     QuizRepository.submitTest(username, testSeries, selectedAnswers)
                     isSubmitted = true
                 },
@@ -374,12 +376,15 @@ fun QuizView(username: String, testSeries: TestSeries, onComplete: () -> Unit) {
 
 @Composable
 fun OptionItem(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    val activeBgColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+    val activeTextColor = MaterialTheme.colorScheme.primary
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .neumorphic(elevation = if(isSelected) 1.dp else 2.dp, isPressed = isSelected)
             .clip(RoundedCornerShape(14.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.05f) else NeuBackground)
+            .background(if (isSelected) activeBgColor else NeuBackground)
             .clickable(onClick = onClick)
             .padding(16.dp),
         contentAlignment = Alignment.CenterStart
@@ -388,10 +393,17 @@ fun OptionItem(text: String, isSelected: Boolean, onClick: () -> Unit) {
             RadioButton(
                 selected = isSelected,
                 onClick = null,
-                colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = MaterialTheme.colorScheme.primary,
+                    unselectedColor = MaterialTheme.colorScheme.outline
+                )
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if(isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray)
+            Text(
+                text = text,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if(isSelected) activeTextColor else MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -399,7 +411,8 @@ fun OptionItem(text: String, isSelected: Boolean, onClick: () -> Unit) {
 @Composable
 fun ResultView(username: String, testSeries: TestSeries, answers: Map<String, Int>, onComplete: () -> Unit) {
     val correctCount = testSeries.questions.count { answers[it.id] == it.correctOptionIndex }
-    val percentage = (correctCount * 100) / testSeries.questions.size
+    val totalQuestions = testSeries.questions.size
+    val percentage = if (totalQuestions > 0) (correctCount * 100) / totalQuestions else 0
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
@@ -408,38 +421,38 @@ fun ResultView(username: String, testSeries: TestSeries, answers: Map<String, In
     ) {
         Text("🎉", fontSize = 64.sp)
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Quiz Completed!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-        Text("You've done a great job, $username", color = Color.Gray)
-        
+        Text("Quiz Completed!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
+        Text("You've done a great job, $username", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
         Spacer(modifier = Modifier.height(40.dp))
-        
+
         Box(
             modifier = Modifier.size(180.dp).neumorphic(elevation = 4.dp, shape = CircleShape).clip(CircleShape).background(NeuBackground),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
-                progress = { percentage / 100f },
+                progress = percentage / 100f,
                 modifier = Modifier.fillMaxSize(0.85f),
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 10.dp,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                strokeCap = StrokeCap.Round
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$percentage%", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                Text("SCORE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("SCORE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        
+
         Spacer(modifier = Modifier.height(48.dp))
-        
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             ScoreMiniCard("Correct", "$correctCount", SuccessGreen, Modifier.weight(1f))
-            ScoreMiniCard("Total", "${testSeries.questions.size}", MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+            ScoreMiniCard("Total", "$totalQuestions", MaterialTheme.colorScheme.primary, Modifier.weight(1f))
         }
-        
+
         Spacer(modifier = Modifier.height(48.dp))
-        
+
         PremiumButton(text = "BACK TO DASHBOARD", onClick = onComplete, modifier = Modifier.fillMaxWidth())
     }
 }
@@ -449,7 +462,7 @@ fun ScoreMiniCard(label: String, value: String, color: Color, modifier: Modifier
     PremiumCard(modifier = modifier) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = color)
-            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -458,7 +471,7 @@ fun ScoreMiniCard(label: String, value: String, color: Color, modifier: Modifier
 fun UserResultsList(submissions: List<UserSubmission>, onClick: (UserSubmission) -> Unit) {
     if (submissions.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No results yet.", color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text("No results yet.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
         }
         return
     }
@@ -468,17 +481,17 @@ fun UserResultsList(submissions: List<UserSubmission>, onClick: (UserSubmission)
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        itemsIndexed(submissions.reversed()) { index, sub ->
+        itemsIndexed(submissions.reversed(), key = { _, sub -> sub.id }) { index, sub ->
             StaggeredFadeIn(index) {
                 PremiumCard(onClick = if (sub.isResultPublished) { { onClick(sub) } } else null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(sub.testTitle, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-                            Text(formatDate(sub.timestamp), fontSize = 12.sp, color = Color.Gray)
+                            Text(sub.testTitle, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(formatDate(sub.timestamp), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (!sub.isResultPublished) {
-                            Surface(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(8.dp)) {
-                                Text("PENDING", modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp), fontWeight = FontWeight.Bold, fontSize = 10.sp, color = Color.Gray)
+                            Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp)) {
+                                Text("PENDING", modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp), fontWeight = FontWeight.Bold, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         } else {
                             Column(horizontalAlignment = Alignment.End) {
@@ -504,17 +517,17 @@ fun ReviewSubmissionScreen(submission: UserSubmission, testSeries: TestSeries) {
             PremiumCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Performance", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                        Text("Performance", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("${submission.correctAnswers}/${submission.totalQuestions} Correct", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                     }
-                    val percentage = (submission.correctAnswers * 100) / submission.totalQuestions
+                    val total = submission.totalQuestions
+                    val percentage = if (total > 0) (submission.correctAnswers * 100) / total else 0
                     Text("$percentage%", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold, color = SuccessGreen)
                 }
             }
         }
 
-        itemsIndexed(testSeries.questions) { index, question ->
-            // Use Number to handle Firestore Int/Long type conversion issues
+        itemsIndexed(testSeries.questions, key = { _, q -> q.id }) { index, question ->
             val userSelection = (submission.selectedAnswers[question.id] as? Number)?.toInt()
             val isCorrect = userSelection == question.correctOptionIndex
             val isSkipped = userSelection == null
@@ -530,30 +543,37 @@ fun ReviewSubmissionScreen(submission: UserSubmission, testSeries: TestSeries) {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         if (isSkipped) {
-                            Surface(color = Color.LightGray.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp)) {
-                                Text("SKIPPED", modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                            Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp)) {
+                                Text("SKIPPED", modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         } else {
                             Icon(
-                                imageVector = if (isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel, 
-                                contentDescription = null, 
-                                tint = if (isCorrect) SuccessGreen else MaterialTheme.colorScheme.error, 
+                                imageVector = if (isCorrect) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                contentDescription = null,
+                                tint = if (isCorrect) SuccessGreen else MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     PremiumCard {
-                        Text(question.text, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(question.text, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(24.dp))
                         question.options.forEachIndexed { optIndex, option ->
                             val isUserSelected = userSelection == optIndex
                             val isCorrectOption = optIndex == question.correctOptionIndex
-                            
+
+                            // High-contrast semantic colors for correct/wrong/neutral options
                             val statusColor = when {
                                 isCorrectOption -> SuccessGreen
                                 isUserSelected && !isCorrect -> MaterialTheme.colorScheme.error
-                                else -> Color.Gray.copy(alpha = 0.3f)
+                                else -> MaterialTheme.colorScheme.outline
+                            }
+
+                            val cardBgColor = when {
+                                isCorrectOption -> SuccessGreen.copy(alpha = 0.1f)
+                                isUserSelected && !isCorrect -> MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+                                else -> NeuBackground
                             }
 
                             Box(
@@ -561,7 +581,7 @@ fun ReviewSubmissionScreen(submission: UserSubmission, testSeries: TestSeries) {
                                     .fillMaxWidth()
                                     .neumorphic(elevation = if(isUserSelected || isCorrectOption) 1.dp else 2.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if(isUserSelected || isCorrectOption) statusColor.copy(alpha = 0.05f) else NeuBackground)
+                                    .background(cardBgColor)
                                     .padding(14.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -577,9 +597,9 @@ fun ReviewSubmissionScreen(submission: UserSubmission, testSeries: TestSeries) {
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = option, 
+                                        text = option,
                                         fontWeight = if (isUserSelected || isCorrectOption) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isUserSelected || isCorrectOption) Color.DarkGray else Color.Gray
+                                        color = if (isUserSelected || isCorrectOption) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
