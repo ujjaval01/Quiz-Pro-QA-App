@@ -23,5 +23,5 @@ val DarkBackground = Color(0xFF111827)
 val DarkOnSurface = Color(0xFFF3F4F6)
 
 // Dark Neumorphic Shadows
-val NeuDarkShadowDark = Color(0xFF0A0F1D)
+val NeuDarkShadowDark = Color(0xFF111211)
 val NeuLightShadowDark = Color(0xFF2D3748)

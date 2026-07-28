@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uv.questionsanswers.ui.theme.NeuBackground
 
 @Composable
 fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
@@ -52,7 +51,7 @@ fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
                     .size(120.dp)
                     .neumorphic(shape = RoundedCornerShape(36.dp))
                     .clip(RoundedCornerShape(36.dp))
-                    .background(NeuBackground),
+                    .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
@@ -65,7 +64,7 @@ fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
                             Icon(
                                 imageVector = if (isAdmin) Icons.Default.Lock else Icons.Default.Person,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -104,9 +103,9 @@ fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
                 // Custom Neumorphic Mode Switcher
                 CustomModeSwitcher(
                     isAdminMode = isAdminMode,
-                    onModeChange = { 
+                    onModeChange = {
                         isAdminMode = it
-                        errorMessage = null 
+                        errorMessage = null
                     }
                 )
 
@@ -121,7 +120,8 @@ fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     },
@@ -163,7 +163,7 @@ fun LoginScreen(onLoginSuccess: (String, String) -> Unit) {
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(48.dp))
     }
 }
@@ -176,7 +176,7 @@ fun CustomModeSwitcher(isAdminMode: Boolean, onModeChange: (Boolean) -> Unit) {
             .height(64.dp)
             .neumorphic(elevation = 3.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(NeuBackground)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(6.dp)
     ) {
         val width = maxWidth
@@ -191,10 +191,10 @@ fun CustomModeSwitcher(isAdminMode: Boolean, onModeChange: (Boolean) -> Unit) {
                 .fillMaxHeight()
                 .neumorphic(elevation = 2.dp, shape = RoundedCornerShape(14.dp))
                 .clip(RoundedCornerShape(14.dp))
-                .background(NeuBackground),
+                .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
-            // Inner shadow or highlight could go here
+            // Sliding tab background
         }
 
         Row(modifier = Modifier.fillMaxSize()) {
