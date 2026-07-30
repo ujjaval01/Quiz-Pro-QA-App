@@ -1,5 +1,6 @@
 package com.uv.questionsanswers
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.uv.questionsanswers.ui.theme.QuestionsAnswersTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,9 +20,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuestionsAnswersTheme {
+                val context = LocalContext.current
+                val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
+                
                 var showSplash by remember { mutableStateOf(true) }
-                var loggedInUser by remember { mutableStateOf<String?>(null) }
-                var isAdmin by remember { mutableStateOf(false) }
+                var loggedInUser by remember { 
+                    mutableStateOf(prefs.getString("user_name", null)) 
+                }
+                var isAdmin by remember { 
+                    mutableStateOf(prefs.getBoolean("is_admin", false)) 
+                }
 
                 PremiumScreen {
                     AnimatedContent(
@@ -41,9 +50,22 @@ class MainActivity : ComponentActivity() {
                                     isAdmin = false
                                     loggedInUser = name
                                 }
+                                // Save session
+                                prefs.edit()
+                                    .putString("user_name", loggedInUser)
+                                    .putBoolean("is_admin", isAdmin)
+                                    .apply()
                             })
-                            isAdmin -> AdminPanel(onLogout = { loggedInUser = null })
-                            else -> UserPanel(username = user, onLogout = { loggedInUser = null })
+                            isAdmin -> AdminPanel(onLogout = { 
+                                loggedInUser = null
+                                isAdmin = false
+                                prefs.edit().clear().apply()
+                            })
+                            else -> UserPanel(username = user, onLogout = { 
+                                loggedInUser = null
+                                isAdmin = false
+                                prefs.edit().clear().apply()
+                            })
                         }
                     }
                 }
